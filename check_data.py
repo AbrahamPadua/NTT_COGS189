@@ -1,8 +1,9 @@
 import numpy as np
 import json
 import os
+import matplotlib.pyplot as plt
 
-data_dir = r"c:\Users\abpadua\Desktop\NTT\NNT_COGS189\data\sub-01\ses-01\run-01"
+data_dir = r"./data/sub-03/ses-02/run-04"
 
 def check_npy(filename):
     path = os.path.join(data_dir, filename)
@@ -46,3 +47,25 @@ check_npy("aux.npy")
 check_npy("timestamp.npy")
 check_json("markers.json")
 check_json("metadata.json")
+
+run_folder_path = data_dir
+
+aux_path = run_folder_path + 'aux.npy'
+if not os.path.exists(aux_path):
+    print('No aux.npy for this run')
+else:
+    aux = np.load(aux_path)
+    if aux.size == 0:
+        print('aux.npy exists but is empty')
+    else:
+        # run_nnt_experiment stores shape (channels, samples)
+        if aux.shape[0] <= 64 and aux.shape[1] > aux.shape[0]:
+            aux = aux.T  # make (samples, channels) for plotting
+
+        print('aux shape (samples,channels):', aux.shape)
+        plt.figure(figsize=(12, 4))
+        for ch in range(aux.shape[1]):
+            plt.plot(aux[:, ch] + ch * 1.2 * np.nanmax(np.abs(aux)), label=f'aux{ch}')
+        for m in markers:
+            plt.axvline(m['start_sample_index'], color='red', alpha=0.3)
+        plt.legend(); plt.show()
